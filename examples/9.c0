@@ -1,0 +1,25 @@
+.constants:
+	0 S "main"
+	1 I 10
+	2 I 100
+	3 I 3
+
+.start:
+
+.functions:
+	0 0 0 1
+
+.F0:
+	0 loadc 1
+	1 loadc 2
+	2 isub
+	3 jge 7
+	4 loadc 2
+	5 iprint
+	6 jmp 9
+	7 loadc 3
+	8 iprint
+	9 loadc 1
+	10 iret
+	11 popn 0
+	12 ret

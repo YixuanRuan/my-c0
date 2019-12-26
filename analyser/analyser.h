@@ -185,7 +185,7 @@ namespace miniplc0 {
             // <condition-statement>
             std::optional<CompilationError> analyseConditionStatement();
             // <condition>
-            std::optional<CompilationError> analyseCondition();
+            std::pair<std::optional<int32_t >,std::optional<CompilationError>> analyseCondition();
             // <loop-statement>
             std::optional<CompilationError> analyseLoopStatement();
             // <scan-statement>

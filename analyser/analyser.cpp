@@ -777,33 +777,34 @@ namespace miniplc0 {
         }
 
         auto err = analyseCondition();
-        if (err.has_value())
-            return err;
-
-        _instructions.emplace_back(Operation::JMP, 0);
-        insindex += 3;
-        int jmp = _instructions.size() - 1;
+        if (err.second.has_value())
+            return err.second;
+        int jcond=err.first.value();
 
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConditionStatement);
         }
 
-        err = analyseStatement();
-        if (err.has_value())
-            return err;
+        auto err2 = analyseStatement();
+        if (err2.has_value())
+            return err2;
+
+        _instructions.emplace_back(JMP,0);
+        int jmps2=_instructions.size()-1;
+        //if不成立跳到这里
+        _instructions[jcond].SetX(_instructions.size());
 
         next = nextToken();
-        _instructions[jmp].SetX(insindex);
         if(!next.has_value() || next.value().GetType() != TokenType::ELSE){
             unreadToken();
             return {};
         }
 
-        err = analyseStatement();
-        if (err.has_value())
-            return err;
-
+        err2 = analyseStatement();
+        if (err2.has_value())
+            return err2;
+        _instructions[jmps2].SetX(_instructions.size());
         return {};
 
     }
@@ -811,10 +812,10 @@ namespace miniplc0 {
     // Done
     // Done
     // <condition> ::= <expression>[<relational-operator><expression>]
-    std::optional<CompilationError> Analyser::analyseCondition(){
+    std::pair<std::optional<int32_t >,std::optional<CompilationError>> Analyser::analyseCondition(){
         auto err = analyseExpression();
         if (err.second.has_value())
-            return err.second;
+            return std::make_pair(std::optional<int32_t>(),err.second);
         err.first.value()->generation();
 
         TokenType type;
@@ -828,14 +829,12 @@ namespace miniplc0 {
             type != TokenType::NOT_EQUAL &&
             type != TokenType::EQUAL)){
             unreadToken();
-            insindex+=3;
-            _instructions.emplace_back(Operation::JNE, insindex + 3);
-            return {};
+            _instructions.emplace_back(Operation::JNE, 0);
+            return std::make_pair(_instructions.size()-1,std::optional<CompilationError>());
         }
 
         err = analyseExpression();
-        if (err.second.has_value())
-            return err.second;
+        if (err.second.has_value()) return std::make_pair(std::make_optional(int32_t()),err.second);
         err.first.value()->generation();
         _instructions.emplace_back(Operation::ISUB, 0);
 //        insindex += 1;
@@ -843,32 +842,32 @@ namespace miniplc0 {
         insindex += 4;
         switch (type) {
             case TokenType::BIG:{
-                _instructions.emplace_back(Operation::JG, insindex + 3);
+                _instructions.emplace_back(Operation::JLE, 0);
                 break;
             }
             case TokenType::SMALL:{
-                _instructions.emplace_back(Operation::JL, insindex + 3);
+                _instructions.emplace_back(Operation::JGE, 0);
                 break;
             }
             case TokenType::BIG_EQUAL:{
-                _instructions.emplace_back(Operation::JGE, insindex + 3);
+                _instructions.emplace_back(Operation::JL, 0);
                 break;
             }
             case TokenType::SMALL_EQUAL:{
-                _instructions.emplace_back(Operation::JLE, insindex + 3);
+                _instructions.emplace_back(Operation::JG, 0);
                 break;
             }
             case TokenType::NOT_EQUAL:{
-                _instructions.emplace_back(Operation::JNE, insindex + 3);
+                _instructions.emplace_back(Operation::JE, 0);
                 break;
             }
             case TokenType::EQUAL:{
-                _instructions.emplace_back(Operation::JE, insindex + 3);
+                _instructions.emplace_back(Operation::JNE, 0);
                 break;
             }
             default: break;
         }
-        return {};
+        return std::make_pair(_instructions.size()-1,std::optional<CompilationError>());
     }
 
 
@@ -890,9 +889,11 @@ namespace miniplc0 {
         int code0= insindex;
         int code1;
 
+        int s0=_instructions.size();
         auto err = analyseCondition();
-        if (err.has_value())
-            return err;
+        if (err.second.has_value())
+            return err.second;
+        int jcond=err.first.value();
 
         _instructions.emplace_back(Operation::JMP, 0);
         insindex += 3;
@@ -903,14 +904,11 @@ namespace miniplc0 {
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrLoopStatement);
         }
 
-        err = analyseStatement();
-        if (err.has_value())
-            return err;
-        _instructions.emplace_back(Operation::JMP, code0);
-        insindex += 3;
-        code1 = insindex;
-        _instructions[jne].SetX(code1);
-
+        auto Serr = analyseStatement();
+        if (Serr.has_value())
+            return Serr;
+        _instructions.emplace_back(JMP,s0);
+        _instructions[jcond].SetX(_instructions.size());
         return {};
     }
 
