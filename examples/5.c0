@@ -29,16 +29,13 @@
 	10 ineg
 	11 loada 0 ,1
 	12 iload
-	13 ineg
-	14 iadd
-	15 loada 0 ,1
-	16 iload
-	17 ineg
-	18 loada 0 ,2
-	19 iload
-	20 ineg
-	21 iadd
-	22 iret
+	13 iadd
+	14 loada 0 ,1
+	15 iload
+	16 loada 0 ,2
+	17 iload
+	18 iadd
+	19 iret
 .F1:
 	0 iprint
 	1 iprint

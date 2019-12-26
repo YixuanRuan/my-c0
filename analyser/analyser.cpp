@@ -368,7 +368,7 @@ namespace miniplc0 {
 
 //        std::stringstream ss;
         // 判断是+1 还是 -1 还是 1
-        TokenType sign;
+        TokenType sign=TokenType::PLUS_SIGN;
         if(next.value().GetType() == TokenType::PLUS_SIGN || next.value().GetType() == TokenType::MINUS_SIGN){
             sign = next.value().GetType();
         }else{

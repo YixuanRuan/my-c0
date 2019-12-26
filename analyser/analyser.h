@@ -432,17 +432,17 @@ namespace miniplc0 {
                     return function.getRet();
                 }
             };
-            struct Char : Factor {
-                int32_t index;
-                Char(TokenType sign, int32_t index) : Factor(sign), index(index) {}
-                TokenType generation()
-                {
-                    _instructions.emplace_back(Operation::LOADC, index);
-                    insindex+=3;
-                    Factor::generation();
-                    return CHAR;
-                }
-            };
+//            struct Char : Factor {
+//                int32_t index;
+//                Char(TokenType sign, int32_t index) : Factor(sign), index(index) {}
+//                TokenType generation()
+//                {
+//                    _instructions.emplace_back(Operation::LOADC, index);
+//                    insindex+=3;
+//                    Factor::generation();
+//                    return CHAR;
+//                }
+//            };
 
     };
 }
