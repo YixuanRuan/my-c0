@@ -142,8 +142,10 @@ void Analyse(std::istream &input, std::ostream &output) {
         std::string INT = "I", STR = "S", type, value = Consts[i].first;
         if (Consts[i].second == 0)
             type = INT;
-        else
+        else{
             type = STR;
+            value = '"'+value+'"';
+        }
         output << fmt::format("\t{} {} {}\n", i, type, value);
     }
     output << fmt::format("\n");

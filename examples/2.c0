@@ -1,7 +1,7 @@
 .constants:
 	0 I 42
-	1 S fun
-	2 S main
+	1 S "fun"
+	2 S "main"
 	3 I 1000
 
 .start:
