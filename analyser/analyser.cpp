@@ -826,6 +826,8 @@ namespace miniplc0 {
             type != TokenType::NOT_EQUAL &&
             type != TokenType::EQUAL)){
             unreadToken();
+            insindex+=3;
+            _instructions.emplace_back(Operation::JNE, insindex + 3);
             return {};
         }
 

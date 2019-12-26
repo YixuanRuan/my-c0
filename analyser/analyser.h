@@ -428,6 +428,7 @@ namespace miniplc0 {
                     Factor::generation();
 
                     _instructions.emplace_back(Operation::CALL,index);
+                    insindex+=3;
                     return function.getRet();
                 }
             };

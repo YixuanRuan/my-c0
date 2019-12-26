@@ -1,0 +1,22 @@
+.constants:
+	0 I 42
+	1 S "fun"
+	2 S "main"
+	3 I 123456
+
+.start:
+
+.functions:
+	0 1 1 1
+	1 2 0 1
+
+.F0:
+	0 loada 0, 0
+	1 iload
+	2 ineg
+	3 iret
+.F1:
+	0 loadc 3
+	1 ineg
+	2 call 0
+	3 iret
