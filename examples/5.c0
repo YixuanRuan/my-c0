@@ -1,51 +1,20 @@
 .constants:
-	0 I 42
-	1 S "fun"
-	2 I 292
-	3 I 2433
-	4 S "main"
-	5 I 1000
-	6 I 10
-	7 I 123456
+	0 S "main"
+	1 I 10
 
 .start:
-	0 loadc 0
 
 .functions:
-	0 1 1 1
-	1 4 0 1
+	0 0 0 1
 
 .F0:
-	0 ipush 0
-	1 ipush 0
-	2 loada 0 ,1
-	3 loadc 2
-	4 istore
-	5 loada 0 ,2
-	6 loadc 3
-	7 istore
-	8 loada 0 ,0
-	9 iload
-	10 loada 0 ,1
-	11 iload
-	12 iadd
-	13 loada 0 ,1
-	14 iload
-	15 loada 0 ,2
-	16 iload
-	17 iadd
-	18 iret
-	19 popn 0
-	20 ret
-.F1:
-	0 loadc 5
-	1 iprint
-	2 loadc 6
-	3 call 0
-	4 iprint
-	5 loadc 7
-	6 ineg
-	7 call 0
-	8 iret
-	9 popn 1
-	10 ret
+	0 loadc 1
+	1 loada 0 ,0
+	2 iload
+	3 loadc 1
+	4 iadd
+	5 iprint
+	6 loadc 1
+	7 iret
+	8 popn 0
+	9 ret
