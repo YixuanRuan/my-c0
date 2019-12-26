@@ -36,6 +36,8 @@
 	17 iload
 	18 iadd
 	19 iret
+	20 popn 0
+	21 ret
 .F1:
 	0 iprint
 	1 iprint
@@ -43,3 +45,5 @@
 	3 ineg
 	4 call 0
 	5 iret
+	6 popn 1
+	7 ret
