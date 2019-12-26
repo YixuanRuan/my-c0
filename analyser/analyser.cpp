@@ -523,7 +523,7 @@ namespace miniplc0 {
             if (!next.has_value())
                 break;
 
-            if(next.value().GetType() != TokenType::CONST || next.value().GetType() != TokenType::INT){
+            if(next.value().GetType() != TokenType::CONST && next.value().GetType() != TokenType::INT){
                 unreadToken();
                 break;
             }
@@ -1078,7 +1078,6 @@ namespace miniplc0 {
         if(!next.has_value() || next.value().GetType() != TokenType::LEFT_BRACKET){
             return std::make_pair(_paras,
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionDefinition));
-
         }
 
         // 接下来一个token如果不是 ')'
