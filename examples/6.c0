@@ -1,0 +1,46 @@
+.constants:
+	0 I 42
+	1 S "fun"
+	2 I 292
+	3 I 2433
+	4 S "main"
+	5 I 1000
+	6 I 10
+	7 I 123456
+
+.start:
+
+.functions:
+	0 1 1 1
+	1 4 0 1
+
+.F0:
+	0 ipush 0
+	1 ipush 0
+	2 loada 0, 1
+	3 istore
+	4 loada 0, 2
+	5 istore
+	6 loada 0, 0
+	7 iload
+	8 loada 0, 1
+	9 iload
+	10 iadd
+	11 loada 0, 1
+	12 iload
+	13 loada 0, 2
+	14 iload
+	15 iadd
+	16 iret
+	17 popn 0
+	18 ret
+.F1:
+	0 loadc 6
+	1 call 0
+	2 iprint
+	3 loadc 7
+	4 ineg
+	5 call 0
+	6 iret
+	7 popn 1
+	8 ret
