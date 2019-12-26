@@ -12,7 +12,7 @@
 	1 2 0 1
 
 .F0:
-	0 loada 0 ,1
+	0 loada 0 ,0
 	1 iload
 	2 ineg
 	3 iret
