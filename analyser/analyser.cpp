@@ -4,7 +4,6 @@
 #include <sstream>
 
 namespace miniplc0 {
-    int insindex=0;
     std::vector<miniplc0::Instruction> _instructions;
     std::pair<Program, std::optional<CompilationError>> Analyser::Analyse() {
         _funcRetType=NULL_TOKEN;
@@ -231,7 +230,6 @@ namespace miniplc0 {
                 return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
             addUninitializedVariable(tmp.value(), TokenType::UNSIGNED_INTEGER);
             _instructions.emplace_back(Operation::IPUSH, 0);
-            insindex += 5;
             return {};
         }
 
@@ -468,7 +466,6 @@ namespace miniplc0 {
             }
 
             // 对栈顶进行初始化
-            insindex = 0;
             _nextTokenIndex = 0;
 
             auto ret = next.value().GetType();
@@ -747,10 +744,8 @@ namespace miniplc0 {
         if (!hasExp && _funcRetType == TokenType::VOID) {
             _instructions.emplace_back(Operation::POPN, _nextTokenIndex);//5
             _instructions.emplace_back(Operation::RET, 0);//1
-            insindex += 6;
         } else if ( hasExp && _funcRetType != TokenType::VOID) {
             _instructions.emplace_back(Operation::IRET, 0);
-            insindex += 1;
         } else
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrReturnStatement);
         return {};
@@ -837,9 +832,6 @@ namespace miniplc0 {
         if (err.second.has_value()) return std::make_pair(std::make_optional(int32_t()),err.second);
         err.first.value()->generation();
         _instructions.emplace_back(Operation::ISUB, 0);
-//        insindex += 1;
-//        insindex += 3;
-        insindex += 4;
         switch (type) {
             case TokenType::BIG:{
                 _instructions.emplace_back(Operation::JLE, 0);
@@ -886,8 +878,6 @@ namespace miniplc0 {
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrLoopStatement);
         }
 
-        int code0= insindex;
-        int code1;
 
         int s0=_instructions.size();
         auto err = analyseCondition();
@@ -896,7 +886,6 @@ namespace miniplc0 {
         int jcond=err.first.value();
 
         _instructions.emplace_back(Operation::JMP, 0);
-        insindex += 3;
         int jne = _instructions.size() - 1;
 
         next = nextToken();
@@ -942,7 +931,6 @@ namespace miniplc0 {
         _instructions.emplace_back(Operation::LOADA, level, index);
         _instructions.emplace_back(Operation::ISCAN, 0);
         _instructions.emplace_back(Operation::ISTORE, 0);
-        insindex += 9;
 
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
@@ -1057,7 +1045,6 @@ namespace miniplc0 {
         index = var.getIndex()-1;
         level = var.isGlobal1();
         _instructions.emplace_back(Operation::LOADA, level, index);//7
-        insindex += 7;
 
         auto err = analyseExpression();
         if (err.second.has_value()) return err.second;
@@ -1065,7 +1052,6 @@ namespace miniplc0 {
         if(rettype==VOID)
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrAssignmentExpression);
         _instructions.emplace_back(Operation::ISTORE, 0);
-        insindex += 1;
         return {};
     }
 

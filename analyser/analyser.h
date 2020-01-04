@@ -12,7 +12,6 @@
 #include <cstddef> // for std::size_t
 
 namespace miniplc0 {
-    extern int insindex;
     extern std::vector<miniplc0::Instruction> _instructions;
 
     class Var {
@@ -323,11 +322,9 @@ namespace miniplc0 {
                         if(mul[i]==DIVISION_SIGN)
                         {
                             _instructions.emplace_back(Operation::IDIV, 0);
-                            insindex+=1;
                         }
                         else if (mul[i]==MULTIPLICATION_SIGN)
                         {
-                            insindex+=1;
                             _instructions.emplace_back(Operation::IMUL, 0);
                         }
                     }
@@ -342,7 +339,6 @@ namespace miniplc0 {
                 virtual  TokenType generation(){
                     if(sign==MINUS_SIGN)
                     {
-                        insindex+=1;
                         _instructions.emplace_back(Operation::INEG, 0);
                     }
                     return TokenType ::NULL_TOKEN;
@@ -358,7 +354,6 @@ namespace miniplc0 {
                     int level=var.isGlobal1(),index=var.getIndex()-1;
                     _instructions.emplace_back(Operation::LOADA, level, index);//7
                     _instructions.emplace_back(Operation::ILOAD, 0);//1
-                    insindex += 8;
                     Factor::generation();
                     return var.getType();
                 }
@@ -371,7 +366,6 @@ namespace miniplc0 {
                 TokenType generation()
                 {
                     _instructions.emplace_back(Operation::LOADC, index);
-                    insindex+=3;
                     Factor::generation();
                     return INT;
                 }
@@ -396,11 +390,9 @@ namespace miniplc0 {
                         if(add[i]==MINUS_SIGN)
                         {
                             _instructions.emplace_back(Operation::ISUB, 0);
-                            insindex+=1;
                         }
                         else if (add[i]==PLUS_SIGN)
                         {
-                            insindex+=1;
                             _instructions.emplace_back(Operation::IADD, 0);
                         }
                     }
@@ -428,7 +420,6 @@ namespace miniplc0 {
                     Factor::generation();
 
                     _instructions.emplace_back(Operation::CALL,index);
-                    insindex+=3;
                     return function.getRet();
                 }
             };
