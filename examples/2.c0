@@ -3,8 +3,10 @@
 	1 S "main"
 	2 I 20
 	3 I 1
-	4 I 1000
-	5 I 10
+	4 I 10
+	5 I 2
+	6 I 30
+	7 I 1000
 
 .start:
 	0 loadc 0
@@ -17,7 +19,7 @@
 	1 iload
 	2 loadc 2
 	3 isub
-	4 jle 14
+	4 jle 22
 	5 loada 1 ,0
 	6 loada 1 ,0
 	7 iload
@@ -25,9 +27,17 @@
 	9 isub
 	10 istore
 	11 loadc 4
-	12 iprint
-	13 jmp 0
-	14 loadc 5
-	15 iret
-	16 popn 1
-	17 ret
+	12 loadc 5
+	13 ineg
+	14 isub
+	15 jle 19
+	16 loadc 6
+	17 iprint
+	18 jmp 0
+	19 loadc 7
+	20 iprint
+	21 jmp 0
+	22 loadc 4
+	23 iret
+	24 popn 1
+	25 ret
