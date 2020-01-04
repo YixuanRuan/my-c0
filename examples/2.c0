@@ -1,9 +1,10 @@
 .constants:
 	0 I 42
 	1 S "main"
-	2 I 100
-	3 I 1000
-	4 I 10
+	2 I 20
+	3 I 1
+	4 I 1000
+	5 I 10
 
 .start:
 	0 loadc 0
@@ -12,16 +13,22 @@
 	0 1 0 1
 
 .F0:
-	0 loadc 2
-	1 loadc 3
-	2 isub
-	3 jle 7
-	4 loadc 3
-	5 iprint
-	6 jmp 9
-	7 loadc 2
-	8 iprint
-	9 loadc 4
-	10 iret
-	11 popn 0
-	12 ret
+	0 loada 1 ,0
+	1 iload
+	2 loadc 2
+	3 isub
+	4 jle 15
+	5 jmp 0
+	6 loada 1 ,0
+	7 loada 1 ,0
+	8 iload
+	9 loadc 3
+	10 isub
+	11 istore
+	12 loadc 4
+	13 iprint
+	14 jmp 0
+	15 loadc 5
+	16 iret
+	17 popn 1
+	18 ret
