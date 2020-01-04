@@ -756,10 +756,13 @@ namespace miniplc0 {
     // Done
     // <condition-statement> ::=
     //    'if' '(' <condition> ')' <statement> ['else' <statement>]
-    // JCOND .code0
-    // jmp .code1
+    // JCOND .code1/.code_next
     // .code0: ifstatement
+    // (
+    // jmp .code_next
     // .code1: elsestatement
+    // )
+    // .code_next
     std::optional<CompilationError> Analyser::analyseConditionStatement(){
         auto next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::IF){
@@ -785,13 +788,16 @@ namespace miniplc0 {
         if (err2.has_value())
             return err2;
 
+        // If成立需要跳过else，如果没有else也要跳到后面
         _instructions.emplace_back(JMP,0);
+
         int jmps2=_instructions.size()-1;
         //if不成立跳到这里
         _instructions[jcond].SetX(_instructions.size());
 
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::ELSE){
+            _instructions[jmps2].SetX(_instructions.size());
             unreadToken();
             return {};
         }
