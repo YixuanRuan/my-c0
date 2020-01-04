@@ -885,9 +885,6 @@ namespace miniplc0 {
             return err.second;
         int jcond=err.first.value();
 
-        _instructions.emplace_back(Operation::JMP, 0);
-        int jne = _instructions.size() - 1;
-
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrLoopStatement);
