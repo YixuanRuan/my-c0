@@ -15,16 +15,21 @@
 	0 loada 0 ,0
 	1 iload
 	2 ineg
-	3 loadc 2
-	4 iadd
-	5 iret
-	6 popn 0
-	7 ret
+	3 loada 1 ,0
+	4 iload
+	5 isub
+	6 loada 1 ,0
+	7 iload
+	8 loadc 2
+	9 isub
+	10 iret
+	11 popn 1
+	12 ret
 .F1:
 	0 loadc 2
 	1 call 0
 	2 iprint
 	3 loadc 2
 	4 iret
-	5 popn 1
+	5 popn 2
 	6 ret
