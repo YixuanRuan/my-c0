@@ -383,9 +383,9 @@ namespace miniplc0 {
                         Factor::generation();
                         return items[0].generation();
                     }
+                    items[0].generation();
                     for(int i=0;i<add.size();i++)
                     {
-                        items[i].generation();
                         items[i+1].generation();
                         if(add[i]==MINUS_SIGN)
                         {

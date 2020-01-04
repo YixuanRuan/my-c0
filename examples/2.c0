@@ -18,13 +18,11 @@
 	3 loada 1 ,0
 	4 iload
 	5 isub
-	6 loada 1 ,0
-	7 iload
-	8 loadc 2
-	9 isub
-	10 iret
-	11 popn 1
-	12 ret
+	6 loadc 2
+	7 isub
+	8 iret
+	9 popn 1
+	10 ret
 .F1:
 	0 loadc 2
 	1 call 0

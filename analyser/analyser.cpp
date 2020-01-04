@@ -383,6 +383,7 @@ namespace miniplc0 {
             case TokenType::IDENTIFIER:{
                 std::string str = next.value().GetValueString();
                 next = nextToken();
+                // 如果接下来没有token了 或者接下来不是 '(' 说明这是个变量
                 if(!next.has_value() || next.value().GetType() != TokenType::LEFT_BRACKET){
                     if (isDeclared(str)) {
                         Var var = getVar(str);
@@ -742,8 +743,8 @@ namespace miniplc0 {
         if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
         if (!hasExp && _funcRetType == TokenType::VOID) {
-            _instructions.emplace_back(Operation::POPN, _nextTokenIndex);//5
-            _instructions.emplace_back(Operation::RET, 0);//1
+            _instructions.emplace_back(Operation::POPN, _nextTokenIndex);
+            _instructions.emplace_back(Operation::RET, 0);
         } else if ( hasExp && _funcRetType != TokenType::VOID) {
             _instructions.emplace_back(Operation::IRET, 0);
         } else
