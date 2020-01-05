@@ -834,23 +834,23 @@ namespace miniplc0 {
         _instructions.emplace_back(Operation::ISUB, 0);
         switch (type) {
             case TokenType::BIG:{
-                _instructions.emplace_back(Operation::JLE, 0);
-                break;
-            }
-            case TokenType::SMALL:{
-                _instructions.emplace_back(Operation::JGE, 0);
-                break;
-            }
-            case TokenType::BIG_EQUAL:{
-                _instructions.emplace_back(Operation::JL, 0);
-                break;
-            }
-            case TokenType::SMALL_EQUAL:{
                 _instructions.emplace_back(Operation::JG, 0);
                 break;
             }
+            case TokenType::SMALL:{
+                _instructions.emplace_back(Operation::JL, 0);
+                break;
+            }
+            case TokenType::BIG_EQUAL:{
+                _instructions.emplace_back(Operation::JGE, 0);
+                break;
+            }
+            case TokenType::SMALL_EQUAL:{
+                _instructions.emplace_back(Operation::JLE, 0);
+                break;
+            }
             case TokenType::NOT_EQUAL:{
-                _instructions.emplace_back(Operation::JE, 0);
+                _instructions.emplace_back(Operation::JNE, 0);
                 break;
             }
             case TokenType::EQUAL:{
