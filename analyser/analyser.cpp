@@ -70,8 +70,6 @@ namespace miniplc0 {
         if(!isFunctionDeclared("main"))
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrMainFunctionMissing);
 		// 没有错误 返回空值
-        _instructions.emplace_back(POPN,g_var.size());
-        _instructions.emplace_back(RET,0);
 		return {};
 	}
 
@@ -500,7 +498,6 @@ namespace miniplc0 {
             auto err = analyseCompoundStatement();
             if (err.has_value())
                 return err;
-            _instructions.emplace_back(POPN,_var->size());
             _instructions.emplace_back(RET,0);
         }
         return {};
@@ -551,6 +548,7 @@ namespace miniplc0 {
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACE){
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrCompoundStatement);
         }
+        _instructions.emplace_back(POPN,getVarsNum());
         popStack();
         return {};
     }
@@ -1443,5 +1441,16 @@ namespace miniplc0 {
     void Analyser::createStack() {
 	    // 程序开始创建第一个栈帧
         _var = new std::map<std::string, Var>();
+    }
+
+    int32_t Analyser::getVarsNum()
+    {
+        int num=0;
+        for(auto it :*_var)
+        {
+            if(it.second.getIndex()!=0)
+                num++;
+        }
+        return num;
     }
 }

@@ -245,6 +245,8 @@ namespace miniplc0 {
 
             Var getVar(const std::string &s);
 
+            int32_t getVarsNum();
+
         public:
             struct Item { //* /
                 std::vector<MulItem*> mulitems;
