@@ -1363,7 +1363,7 @@ namespace miniplc0 {
     bool Analyser::isConstant(const std::string &s) {//0
         auto p = _findLocal(s);
         auto g = _findGlobal(s);
-        return (p.getIndex() != 0 && p.isConst1()) || (g.getIndex() != 0 && g.isConst1());
+        return (p.getIndex() != 0 && p.isConst1()) && (g.getIndex() != 0 && g.isConst1());
     }
 
     //底层操作，添加，查找
