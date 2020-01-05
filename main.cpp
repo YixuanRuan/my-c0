@@ -226,9 +226,10 @@ inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &out
             vm::u1 op = static_cast<vm::u1>(ope);
             writeNBytes(&op, sizeof op);
             vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+//            std::cout<<x;
             writeNBytes(&x, sizeof x);
             vm::u4 y = static_cast<vm::u4>(instruction.GetY());
-            writeNBytes(&x, sizeof y);
+            writeNBytes(&y, sizeof y);
             return ;
         }
     }
