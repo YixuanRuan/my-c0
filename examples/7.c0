@@ -1,0 +1,59 @@
+.constants:
+	0 I 42
+	1 S "main"
+	2 I 10
+	3 I 40
+	4 I 5
+	5 I 34
+	6 I 1
+	7 I 78
+	8 I 100
+
+.start:
+	0 loadc 0
+
+.functions:
+	0 1 0 1
+
+.F0:
+	0 loadc 2
+	1 loada 1, 1
+	2 iload
+	3 loadc 3
+	4 isub
+	5 jle 34
+	6 loada 0, 0
+	7 iload
+	8 loadc 4
+	9 isub
+	10 jle 22
+	11 loadc 5
+	12 iprint
+	13 printl
+	14 loada 0, 0
+	15 loada 0, 0
+	16 iload
+	17 loadc 6
+	18 isub
+	19 istore
+	20 popn 0
+	21 jmp 26
+	22 loadc 7
+	23 iprint
+	24 printl
+	25 popn 0
+	26 loada 1, 1
+	27 loada 1, 1
+	28 iload
+	29 loadc 6
+	30 isub
+	31 istore
+	32 popn 0
+	33 jmp 1
+	34 loadc 8
+	35 iprint
+	36 printl
+	37 loadc 2
+	38 iret
+	39 popn 1
+	40 ret
