@@ -70,6 +70,8 @@ namespace miniplc0 {
         if(!isFunctionDeclared("main"))
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrMainFunctionMissing);
 		// 没有错误 返回空值
+        _instructions.emplace_back(POPN,g_var.size());
+        _instructions.emplace_back(RET,0);
 		return {};
 	}
 
@@ -498,8 +500,8 @@ namespace miniplc0 {
             auto err = analyseCompoundStatement();
             if (err.has_value())
                 return err;
-//            _instructions.emplace_back(POPN,_var->size());
-//            _instructions.emplace_back(RET,0);
+            _instructions.emplace_back(POPN,_var->size());
+            _instructions.emplace_back(RET,0);
         }
         return {};
     }
