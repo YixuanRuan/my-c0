@@ -29,6 +29,7 @@ void Tokenize(std::istream &input, std::ostream &output) {
     return;
 }
 
+
 void Binary(std::istream &input, std::ostream &output) {
     auto tks = _tokenize(input);
     miniplc0::Analyser analyser(tks);
@@ -217,24 +218,42 @@ int main(int argc, char **argv) {
         input = &inf;
     } else
         input = &std::cin;
-    if (output_file != "-") {
-        outf.open(output_file, std::ios::out | std::ios::trunc);
-        if (!outf) {
-            fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
-            exit(2);
-        }
-        output = &outf;
-    } else
-        output = &std::cout;
     if (program["-t"] == true && program["-s"] == true) {
         fmt::print(stderr, "You can only perform tokenization or syntactic analysis at one time.");
         exit(2);
     }
     if (program["-t"] == true) {
+        if (output_file != "-") {
+            outf.open(output_file, std::ios::out | std::ios::trunc);
+            if (!outf) {
+                fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
+                exit(2);
+            }
+            output = &outf;
+        } else
+            output = &std::cout;
         Tokenize(*input, *output);
     } else if (program["-s"] == true) {
+        if (output_file != "-") {
+            outf.open(output_file, std::ios::out | std::ios::trunc);
+            if (!outf) {
+                fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
+                exit(2);
+            }
+            output = &outf;
+        } else
+            output = &std::cout;
         Analyse(*input, *output);
     } else if (program["-c"] == true) {
+        if (output_file != "-") {
+            outf.open(output_file, std::ios::binary | std::ios::out | std::ios::trunc);
+            if (!outf) {
+                fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
+                exit(2);
+            }
+            output = &outf;
+        } else
+            output = &std::cout;
         Binary(*input, *output);
     } else {
         fmt::print(stderr, "You must choose tokenization or syntactic analysis.");
