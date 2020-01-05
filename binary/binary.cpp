@@ -23,6 +23,9 @@ inline void catOp(miniplc0::Instruction &instruction,std::ofstream &out) {
         case miniplc0::IPRINT:{
             ope=0xa0;break;
         }
+        case miniplc0::CPRINT:{
+            ope=0xa2;break;
+        }
         case miniplc0::ILOAD:{
             ope=0x10;break;
         }

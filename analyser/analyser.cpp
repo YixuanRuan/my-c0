@@ -995,7 +995,8 @@ namespace miniplc0 {
                 unreadToken();
                 return {};
             }
-
+            _instructions.emplace_back(IPUSH,' ');
+            _instructions.emplace_back(CPRINT,0);
             err = analysePrintable();
             if (err.has_value())
                 return err;

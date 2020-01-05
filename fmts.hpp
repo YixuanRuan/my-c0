@@ -326,6 +326,9 @@ namespace fmt {
                 case miniplc0::IPRINT:
                     name = "iprint";
                     break;
+                case miniplc0::CPRINT:
+                    name = "cprint";
+                    break;
                 case miniplc0::ISCAN:
                     name = "iscan";
                     break;
@@ -380,6 +383,7 @@ namespace fmt {
                 case miniplc0::RET:
                 case miniplc0::IRET:
                 case miniplc0::IPRINT:
+                case miniplc0::CPRINT:
                 case miniplc0::ISCAN:
                 case miniplc0::POP:
                     return format_to(ctx.out(), "{}", p.GetOperation());
