@@ -57,36 +57,3 @@ endif()
 # This will add the include path, respectively.
 # target_link_libraries(${PROJECT_LIB} fmt::fmt)
 target_link_libraries(${PROJECT_EXE} ${PROJECT_LIB} argparse fmt::fmt)
-
-# For tests
-add_subdirectory(3rd_party/catch2)
-enable_testing()
-
-set(test_src
-	tests/test_main.cpp
-	tests/test_tokenizer.cpp
-	tests/simple_vm.hpp
-	tests/test_analyser.cpp
-)
-
-add_executable(miniplc0_test ${test_src})
-target_include_directories(miniplc0_test PRIVATE .)
-target_link_libraries(miniplc0_test Catch2::Test ${PROJECT_LIB} fmt::fmt)
-add_test(all_test miniplc0_test)
-find_program(OPEN_CPP_COVERAGE OpenCppCoverage.exe)
-
-if (MSVC AND OPEN_CPP_COVERAGE)
-	string(REPLACE "/" "\\" MY_SOURCE_DIR "${CMAKE_SOURCE_DIR}")
-	add_custom_command(TARGET miniplc0_test
-					   POST_BUILD
-					   COMMAND ${OPEN_CPP_COVERAGE}
-					            --sources ${MY_SOURCE_DIR}
-								--excluded_sources ${MY_SOURCE_DIR}\\3rd_party
-								"$<TARGET_FILE:miniplc0_test>")
-else()
-
-endif()
-
-set_target_properties(miniplc0_test PROPERTIES
-                      CXX_STANDARD 17
-                      CXX_STANDARD_REQUIRE ON)
