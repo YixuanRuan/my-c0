@@ -22,6 +22,7 @@ namespace miniplc0 {
 		ErrNoError, // Should be only used internally.
 		ErrStreamError, 
 		ErrEOF,
+        ErrUnfinishComment,
         ErrValueOverflow,
 		ErrInvalidInput,
 		ErrInvalidIdentifier,

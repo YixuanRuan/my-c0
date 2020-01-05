@@ -164,6 +164,38 @@ namespace miniplc0 {
                         break;
 					case '/':
 						// 请填空：切换状态
+                        current_char = nextChar();
+                        if(!current_char.has_value()){
+                            unreadLast();
+                            current_state = DFAState::DIVISION_SIGN_STATE;
+                            break;
+                        }
+                        ch = current_char.value();
+                        if(ch=='/'){
+                            while(current_char.has_value()&&current_char.value()!=0x0A&&current_char.value()!=0x0D){
+                                current_char = nextChar();
+                            }
+                            current_state = DFAState::INITIAL_STATE;
+                            ss.str("");
+                            break;
+                        }else if(ch=='*'){
+                            while(1) {
+                                current_char=nextChar();
+                                while(current_char.has_value()&&current_char.value()!= '*')
+                                    current_char=nextChar();
+                                if(!current_char.has_value())
+                                    return std::make_pair(std::optional<Token>(),
+                                                          std::make_optional<CompilationError>(pos, ErrorCode::ErrUnfinishComment));
+                                current_char=nextChar();
+                                if (current_char.value()=='/'){
+                                    current_state=INITIAL_STATE;
+                                    break;
+                                }
+                            }
+                            ss.str("");
+                            break;
+                        }
+                        unreadLast();
                         current_state = DFAState::DIVISION_SIGN_STATE;
                         break;
 

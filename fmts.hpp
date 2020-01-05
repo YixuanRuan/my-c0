@@ -102,6 +102,10 @@ namespace fmt {
             case miniplc0::ErrAssignmentExpression:
                 name = "The assignment expression is invalid.";
                 break;
+            case miniplc0::ErrUnfinishComment:
+                name = "Comment unfinish invalid.";
+                break;
+
 			}
 			return format_to(ctx.out(), name);
 		}
