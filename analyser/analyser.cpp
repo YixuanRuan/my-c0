@@ -498,8 +498,8 @@ namespace miniplc0 {
             auto err = analyseCompoundStatement();
             if (err.has_value())
                 return err;
-            _instructions.emplace_back(POPN,_var->size());
-            _instructions.emplace_back(RET,0);
+//            _instructions.emplace_back(POPN,_var->size());
+//            _instructions.emplace_back(RET,0);
         }
         return {};
     }
