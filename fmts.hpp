@@ -51,6 +51,9 @@ namespace fmt {
 			case miniplc0::ErrNoSemicolon:
 				name = "Zai? Wei shen me bu xie fen hao.";
 				break;
+            case miniplc0::ErrStatement:
+                name = "Err statement.";
+                break;
 			case miniplc0::ErrInvalidVariableDeclaration:
 				name = "The declaration is invalid.";
 				break;

@@ -602,15 +602,15 @@ namespace miniplc0 {
         switch (next.value().GetType()) {
             // '{' <statement-seq> '}'
             case TokenType::LEFT_BRACE:{
+                unreadToken();
                 pushStack();
-                err = analyseStatementSeq();
-                popStack();
+                err = analyseCompoundStatement();
                 if (err.has_value())
                     return err;
-                next = nextToken();
-                if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACE){
-                    return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrStatement);
-                }
+//                next = nextToken();
+//                if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACE){
+//                    return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrStatement);
+//                }
                 return {};
             }
             // <condition-statement>
