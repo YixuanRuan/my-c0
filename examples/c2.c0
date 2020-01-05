@@ -1,6 +1,11 @@
 .constants:
-	0 I 42
+	0 I 100
 	1 S "main"
+	2 I 3
+	3 I 10000
+	4 I 0
+	5 I 1
+	6 I 10
 
 .start:
 	0 loadc 0
@@ -9,5 +14,50 @@
 	0 1 0 1
 
 .F0:
-	0 popn 0
-	1 ret
+	0 loadc 2
+	1 loadc 3
+	2 ipush 0
+	3 loada 0, 0
+	4 iload
+	5 loadc 4
+	6 isub
+	7 jle 39
+	8 loada 0, 2
+	9 iscan
+	10 istore
+	11 loada 0, 2
+	12 iload
+	13 iprint
+	14 printl
+	15 loada 0, 2
+	16 iload
+	17 loada 0, 1
+	18 iload
+	19 isub
+	20 jge 27
+	21 loada 0, 1
+	22 loada 0, 2
+	23 iload
+	24 istore
+	25 popn 0
+	26 jmp 27
+	27 loada 0, 1
+	28 iload
+	29 iprint
+	30 printl
+	31 loada 0, 0
+	32 loada 0, 0
+	33 iload
+	34 loadc 5
+	35 isub
+	36 istore
+	37 popn 0
+	38 jmp 3
+	39 loada 0, 1
+	40 iload
+	41 iprint
+	42 printl
+	43 loadc 6
+	44 iret
+	45 popn 3
+	46 ret
