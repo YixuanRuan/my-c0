@@ -142,7 +142,7 @@ inline void catOp(miniplc0::Instruction &instruction,std::ofstream &out) {
             vm::u2 x = static_cast<vm::u2>(instruction.GetX());
             writeNBytes(&x, sizeof x);
             vm::u4 y = static_cast<vm::u4>(instruction.GetY());
-            y = y & 0x00010000;
+            y = y & 0x00ff;
             writeNBytes(&y, sizeof y);
             return ;
         }
