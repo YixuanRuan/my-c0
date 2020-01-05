@@ -97,8 +97,13 @@ namespace miniplc0 {
                                     std::optional<Token>(
                                             Token(TokenType::UNSIGNED_INTEGER, std::to_string(ch), pos, previousPos())),
                                     std::optional<CompilationError>());
-                        else
-                            invalid = true;
+                        else{
+                            unreadLast();
+                            return std::make_pair(
+                                    std::optional<Token>(
+                                            Token(TokenType::UNSIGNED_INTEGER, std::to_string('0'-48), pos, previousPos())),
+                                    std::optional<CompilationError>());
+                        }
                     }else
                         current_state = DFAState::UNSIGNED_INTEGER_STATE; // 切换到无符号整数的状态
                 }else if (miniplc0::isalpha(ch)) // 读到的字符是英文字母
