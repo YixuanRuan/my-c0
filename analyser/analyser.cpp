@@ -5,6 +5,9 @@
 
 namespace miniplc0 {
     std::vector<miniplc0::Instruction> _instructions;
+
+
+
     std::pair<Program, std::optional<CompilationError>> Analyser::Analyse() {
         _funcRetType=NULL_TOKEN;
         auto err = analyseProgram();

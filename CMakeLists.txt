@@ -17,6 +17,9 @@ set(lib_src
 	analyser/analyser.h
 	analyser/analyser.cpp
 	instruction/instruction.h
+	binary/type.h
+	binary/binary.h
+	binary/binary.cpp
 )
 
 set(main_src
