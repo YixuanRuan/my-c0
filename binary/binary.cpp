@@ -1,8 +1,7 @@
 #include "binary.h"
 inline void catOp(miniplc0::Instruction &instruction,std::ofstream &out) {
-    char bytes[8];
+    char bytes[32];
     const auto writeNBytes = [&](void* addr, int count) {
-        assert(0 < count && count <= 8);
         char* p = reinterpret_cast<char*>(addr) + (count-1);
         for (int i = 0; i < count; ++i) {
             bytes[i] = *p--;
