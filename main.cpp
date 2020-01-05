@@ -29,37 +29,6 @@ void Tokenize(std::istream &input, std::ostream &output) {
     return;
 }
 
-
-inline std::string trim(std::string s) {
-    auto bg = 0;
-    auto ed = s.size();
-    // bg = s.find_first_not_of(" \n\r\t\v\f");
-    // bg = bg == std::string::npos? 0 : bg;
-    for (;bg < ed; ++bg) {
-        if (!isspace(static_cast<unsigned char>(s[bg]))) {
-            break;
-        }
-    }
-    // ed = s.find_last_not_of(" \n\r\t\v\f");
-    // ed = ed == std::string::npos? s.size() : ed+1;
-    for (; ed > bg; --ed) {
-        if (!isspace(static_cast<unsigned char>(s[ed]))) {
-            break;
-        }
-    }
-    return s.substr(bg, ed-bg);
-}
-
-inline std::int32_t try_to_int(std::string s) {
-    s = trim(s);
-    if (s.length() > 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
-        return static_cast<std::int32_t>(std::stoull(s, 0, 0));
-    }
-    else {
-        return std::stoi(s);
-    }
-}
-
 void Binary(std::istream &input, std::ofstream &out) {
     char bytes[8];
     auto tks = _tokenize(input);
@@ -88,8 +57,10 @@ void Binary(std::istream &input, std::ofstream &out) {
     out.write("\x43\x30\x3A\x29", 4);
     // version
     out.write("\x00\x00\x00\x01", 4);
+    // constants_count
     vm::u2 constants_count = Consts.size();
     writeNBytes(&constants_count, sizeof constants_count);
+    // constants
     for(int i=0;i<Consts.size();i++)
     {
         int type,length;
@@ -101,6 +72,7 @@ void Binary(std::istream &input, std::ofstream &out) {
         if(type == 0) {
             out.write("\x00", 1);
             std::string v = Consts.at(i).first;
+            std::cout << v;
             vm::u2 len = v.length();
             writeNBytes(&len, sizeof len);
             out.write(v.c_str(), len);
@@ -256,13 +228,13 @@ inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &out
             writeNBytes(&op, sizeof op);
             vm::u2 x = static_cast<vm::u2>(instruction.GetX());
             writeNBytes(&x, sizeof x);
-            vm::u2 y = static_cast<vm::u4>(instruction.GetY());
+            vm::u4 y = static_cast<vm::u4>(instruction.GetY());
             writeNBytes(&x, sizeof y);
             return ;
         }
     }
     if(num==1){
-        vm::u1 op = static_cast<vm::u1>(ope);
+        vm::u1 op = ope;
         writeNBytes(&op, sizeof op);
     }
 
