@@ -23,6 +23,7 @@ namespace miniplc0 {
         IRET,
         IPRINT,
         CPRINT,
+        PRINTL,
         ISCAN,
         POPN,
         POP,

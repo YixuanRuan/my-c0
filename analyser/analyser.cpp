@@ -968,7 +968,7 @@ namespace miniplc0 {
                 return err;
             next = nextToken();
         }
-
+        _instructions.emplace_back(PRINTL,0);
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrPrintStatement);
         }
