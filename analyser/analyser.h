@@ -271,7 +271,7 @@ namespace miniplc0 {
                 MulItem(TokenType sign) : sign(sign) {}
                 virtual  TokenType gen(){
                     if(sign==MINUS_SIGN) _instructions.emplace_back(Operation::INEG, 0);
-                    return TokenType ::NULL_TOKEN;
+                    return TokenType::NULL_TOKEN;
                 }
             };
             struct Variable : MulItem {
@@ -294,7 +294,7 @@ namespace miniplc0 {
                 TokenType gen(){
                     _instructions.emplace_back(Operation::LOADC, index);
                     MulItem::gen();
-                    return INT;
+                    return TokenType::UNSIGNED_INTEGER;
                 }
             };
             struct Expression : MulItem {

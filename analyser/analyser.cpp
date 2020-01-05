@@ -322,6 +322,7 @@ namespace miniplc0 {
         auto err = analyseUnaryExpression();
         if (err.second.has_value())
             return std::make_pair(std::optional<Item>(), err.second);
+
         facs.emplace_back(err.first.value());
 
         // {<multiplicative-operator><unary-expression>}
@@ -431,6 +432,7 @@ namespace miniplc0 {
                     return std::make_pair(std::optional<Analyser::MulItem*>(),
                                           std::make_optional<CompilationError>(_current_pos,
                                                                                ErrorCode::ErrIncompleteExpression));
+                return std::make_pair(err.first,std::optional<CompilationError>());
                 break;
             }
             default:
