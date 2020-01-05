@@ -1,0 +1,9 @@
+int main(){
+	if(2){
+print(4);
+if(3>2)print(5);
+}
+
+	print(0);
+	return 10;
+}

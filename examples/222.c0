@@ -1,0 +1,16 @@
+int a = 100;
+int main(){
+	int x=3;
+	int min = 10000;
+	int n;
+	while(x>0){
+		scan(n);
+		print(n);
+		if(n<min){ min=n;}
+		print(min);
+		x = x-1;
+		print(x);
+	}
+	print(min);
+	return 10;
+}
