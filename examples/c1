@@ -1,5 +1,10 @@
 int g0 = 42;
 int main(){
+	int a = 10;
+	while(g0>40){
+		print(34);
+		g0 = a;
+	}
 	print(100);
 	return 10;
 }
