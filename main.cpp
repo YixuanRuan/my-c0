@@ -72,7 +72,6 @@ void Binary(std::istream &input, std::ofstream &out) {
         if(type == 0) {
             out.write("\x00", 1);
             std::string v = Consts.at(i).first;
-            std::cout << v;
             vm::u2 len = v.length();
             writeNBytes(&len, sizeof len);
             out.write(v.c_str(), len);
@@ -146,7 +145,7 @@ inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &out
             ope=0x06;
             vm::u1 op = static_cast<vm::u1>(ope);
             writeNBytes(&op, sizeof op);
-            vm::u2 x = static_cast<vm::u4>(instruction.GetX());
+            vm::u4 x = static_cast<vm::u4>(instruction.GetX());
             writeNBytes(&x, sizeof x);
             return ;
         }
@@ -162,7 +161,7 @@ inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &out
             ope=0x02;
             vm::u1 op = static_cast<vm::u1>(ope);
             writeNBytes(&op, sizeof op);
-            vm::u2 x = static_cast<vm::u4>(instruction.GetX());
+            vm::u4 x = static_cast<vm::u4>(instruction.GetX());
             writeNBytes(&x, sizeof x);
             return ;
         }
