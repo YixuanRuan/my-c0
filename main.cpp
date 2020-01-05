@@ -1,6 +1,6 @@
 #include "argparse.hpp"
 #include "fmt/core.h"
-
+#include "type.h"
 #include "tokenizer/tokenizer.h"
 #include "analyser/analyser.h"
 #include "fmts.hpp"
@@ -10,7 +10,7 @@
 #include "analyser/analyser.h"
 
 
-inline void printOperation(miniplc0::Instruction &instruction,std::ostream &);
+inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &);
 
 std::vector<miniplc0::Token> _tokenize(std::istream &input) {
     miniplc0::Tokenizer tkz(input);
@@ -30,7 +30,38 @@ void Tokenize(std::istream &input, std::ostream &output) {
 }
 
 
-void Binary(std::istream &input, std::ostream &output) {
+inline std::string trim(std::string s) {
+    auto bg = 0;
+    auto ed = s.size();
+    // bg = s.find_first_not_of(" \n\r\t\v\f");
+    // bg = bg == std::string::npos? 0 : bg;
+    for (;bg < ed; ++bg) {
+        if (!isspace(static_cast<unsigned char>(s[bg]))) {
+            break;
+        }
+    }
+    // ed = s.find_last_not_of(" \n\r\t\v\f");
+    // ed = ed == std::string::npos? s.size() : ed+1;
+    for (; ed > bg; --ed) {
+        if (!isspace(static_cast<unsigned char>(s[ed]))) {
+            break;
+        }
+    }
+    return s.substr(bg, ed-bg);
+}
+
+inline std::int32_t try_to_int(std::string s) {
+    s = trim(s);
+    if (s.length() > 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
+        return static_cast<std::int32_t>(std::stoull(s, 0, 0));
+    }
+    else {
+        return std::stoi(s);
+    }
+}
+
+void Binary(std::istream &input, std::ofstream &out) {
+    char bytes[8];
     auto tks = _tokenize(input);
     miniplc0::Analyser analyser(tks);
     auto p = analyser.Analyse();
@@ -43,9 +74,22 @@ void Binary(std::istream &input, std::ostream &output) {
     std::vector<miniplc0::Function> funlist = v.getFunctionList();
     std::vector<miniplc0::Instruction> beginCode = v.getBeginCode();
     std::vector<std::vector<miniplc0::Instruction>> program = v.getProgramList();
-    output<<fmt::format("{:032b}",0x43303a29);
-    output<<fmt::format("{:032b}",0x1);
-    output<<fmt::format("{:016b}",Consts.size());
+
+    const auto writeNBytes = [&](void* addr, int count) {
+        assert(0 < count && count <= 8);
+        char* p = reinterpret_cast<char*>(addr) + (count-1);
+        for (int i = 0; i < count; ++i) {
+            bytes[i] = *p--;
+        }
+        out.write(bytes, count);
+    };
+
+    // magic
+    out.write("\x43\x30\x3A\x29", 4);
+    // version
+    out.write("\x00\x00\x00\x01", 4);
+    vm::u2 constants_count = Consts.size();
+    writeNBytes(&constants_count, sizeof constants_count);
     for(int i=0;i<Consts.size();i++)
     {
         int type,length;
@@ -54,44 +98,55 @@ void Binary(std::istream &input, std::ostream &output) {
         else
             type=0;//String
         //type 8
-        output<<fmt::format("{:08b}",type);
-        //length 16
-        output<<fmt::format("{:016b}",Consts.at(i).first.length());
-        //value 一个char 8位
-        if(type==1)
-        {
+        if(type == 0) {
+            out.write("\x00", 1);
+            std::string v = Consts.at(i).first;
+            vm::u2 len = v.length();
+            writeNBytes(&len, sizeof len);
+            out.write(v.c_str(), len);
+        }else if(type==1){
+            out.write("\x01", 1);
             std::stringstream ss;
             ss<<Consts.at(i).first;
-            int32_t num;
-            ss>>num;
-            output<<fmt::format("{:032b}",num);
+            vm::int_t v;
+            ss>>v;
+            writeNBytes(&v, sizeof v);
         }
-        else{
-            for(auto it:Consts.at(i).first)
-                output<<fmt::format("{:08b}",it);
-        }
-
     }
+
+    vm::u2 instructions_count = beginCode.size();
+    writeNBytes(&instructions_count, sizeof instructions_count);
+
     for(auto it:beginCode)
-        printOperation(it,output);
+        printOperation(it,out);
+
+    vm::u2 functions_count = funlist.size();
+    writeNBytes(&functions_count, sizeof functions_count);
     for(int i=0;i<funlist.size();i++)
     {
-        //nameindex 16
-        output<<fmt::format("{:016b}",funlist[i].nameindex);
-        //params_len 16
-        output<<fmt::format("{:016b}",funlist[i].getParaSize());
-        //level 16
-        output<<fmt::format("{:016b}",funlist[i].level);
+        vm::u2 v;
+        v = funlist[i].nameindex; writeNBytes(&v, sizeof v);
+        v = funlist[i].getParaSize(); writeNBytes(&v, sizeof v);
+        v = funlist[i].level;     writeNBytes(&v, sizeof v);
+        v = program[i+1].size();     writeNBytes(&v, sizeof v);
         //ins_count 16
-        output<<fmt::format("{:016b}",program[i+1].size());
         for(auto it:program[i+1])
         {
-            printOperation(it,output);
+            printOperation(it,out);
         }
     }
 }
 
-inline void printOperation(miniplc0::Instruction &instruction,std::ostream &output) {
+inline void printOperation(miniplc0::Instruction &instruction,std::ofstream &out) {
+    char bytes[8];
+    const auto writeNBytes = [&](void* addr, int count) {
+        assert(0 < count && count <= 8);
+        char* p = reinterpret_cast<char*>(addr) + (count-1);
+        for (int i = 0; i < count; ++i) {
+            bytes[i] = *p--;
+        }
+        out.write(bytes, count);
+    };
     int ope,num=1;
     switch(instruction.GetOperation())
     {
@@ -107,21 +162,110 @@ inline void printOperation(miniplc0::Instruction &instruction,std::ostream &outp
         case miniplc0::IPRINT:ope=0xa0;num=1;break;
         case miniplc0::ISCAN:ope=0xb0;num=1;break;
         case miniplc0::POP:ope=0x04;num=1;break;
-        case miniplc0::CALL:ope=0x80;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::POPN:ope=0x06;num=2;output<<fmt::format("{:08b}{:032b}",ope,instruction.GetX());break;
-        case miniplc0::LOADC:ope=0x09;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::IPUSH:ope=0x02;num=2;output<<fmt::format("{:08b}{:032b}",ope,instruction.GetX());break;
-        case miniplc0::JE:ope=0x71;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JNE:ope=0x72;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JMP:ope=0x70;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JL:ope=0x73;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JLE:ope=0x76;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JG:ope=0x75;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::JGE:ope=0x74;num=2;output<<fmt::format("{:08b}{:016b}",ope,instruction.GetX());break;
-        case miniplc0::LOADA:ope=0x0a;num=3;output<<fmt::format("{:08b}{:016b}{:032b}",ope,instruction.GetX(),instruction.GetY());break;
+        case miniplc0::CALL:{
+            ope=0x80;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::POPN:{
+            ope=0x06;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u4>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::LOADC:{
+            ope=0x09;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::IPUSH:{
+            ope=0x02;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u4>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JE:{
+            ope=0x71;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JNE:{
+            ope=0x72;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JMP:{
+            ope=0x70;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JL:{
+            ope=0x73;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JLE:{
+            ope=0x76;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JG:{
+            ope=0x75;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::JGE:{
+            ope=0x74;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            return ;
+        }
+        case miniplc0::LOADA:{
+            ope=0x0a;
+            vm::u1 op = static_cast<vm::u1>(ope);
+            writeNBytes(&op, sizeof op);
+            vm::u2 x = static_cast<vm::u2>(instruction.GetX());
+            writeNBytes(&x, sizeof x);
+            vm::u2 y = static_cast<vm::u4>(instruction.GetY());
+            writeNBytes(&x, sizeof y);
+            return ;
+        }
     }
-    if(num==1)
-        output<<fmt::format("{:08b}",ope);
+    if(num==1){
+        vm::u1 op = static_cast<vm::u1>(ope);
+        writeNBytes(&op, sizeof op);
+    }
+
 }
 
 void Analyse(std::istream &input, std::ostream &output) {
@@ -254,7 +398,8 @@ int main(int argc, char **argv) {
             output = &outf;
         } else
             output = &std::cout;
-        Binary(*input, *output);
+        std::ofstream* real_out = dynamic_cast<std::ofstream*>(output);
+        Binary(*input, *real_out);
     } else {
         fmt::print(stderr, "You must choose tokenization or syntactic analysis.");
         exit(2);
