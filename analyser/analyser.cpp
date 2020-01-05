@@ -241,7 +241,9 @@ namespace miniplc0 {
         if (err.second.has_value())
             return err.second;
         auto ty=err.first.value()->gen();
-
+        if(ty==VOID)
+            return std::make_optional<CompilationError>(_current_pos,
+                                                        ErrorCode::ErrAssignmentExpression);
         // 加入常量变量表
         if (hasConst == 1)
             addConstant(tmp.value(), TokenType::UNSIGNED_INTEGER);
@@ -1046,7 +1048,7 @@ namespace miniplc0 {
         auto err = analyseExpression();
         if (err.second.has_value()) return err.second;
         auto rettype=err.first.value()->gen();
-        if(rettype==VOID)
+        if(rettype==TokenType::VOID)
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrAssignmentExpression);
         _instructions.emplace_back(Operation::ISTORE, 0);
         return {};
