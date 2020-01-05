@@ -1,0 +1,13 @@
+.constants:
+	0 I 42
+	1 S "main"
+
+.start:
+	0 loadc 0
+
+.functions:
+	0 1 0 1
+
+.F0:
+	0 popn 0
+	1 ret
