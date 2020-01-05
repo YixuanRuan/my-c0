@@ -5,9 +5,6 @@
 
 namespace miniplc0 {
     std::vector<miniplc0::Instruction> _instructions;
-
-
-
     std::pair<Program, std::optional<CompilationError>> Analyser::Analyse() {
         _funcRetType=NULL_TOKEN;
         auto err = analyseProgram();
@@ -243,7 +240,7 @@ namespace miniplc0 {
         auto err = analyseExpression();
         if (err.second.has_value())
             return err.second;
-        auto ty=err.first.value()->generation();
+        auto ty=err.first.value()->gen();
 
         // 加入常量变量表
         if (hasConst == 1)
@@ -317,7 +314,7 @@ namespace miniplc0 {
     std::pair<std::optional<Analyser::Item>,std::optional<CompilationError>> Analyser::analyseMultiplicativeExpression() {
 
         std::vector<TokenType> ops;
-        std::vector<Factor *> facs;
+        std::vector<MulItem *> facs;
 
         // <unary-expression>
         auto err = analyseUnaryExpression();
@@ -360,10 +357,10 @@ namespace miniplc0 {
 	// <unary-expression> ::= [<unary-operator>]<primary-expression>
 	// <primary-expression> ::= '('<expression>')' | <identifier>
 	// | <integer-literal> | <function-call>
-    std::pair<std::optional<Analyser::Factor*>, std::optional<CompilationError>> Analyser::analyseUnaryExpression(){
+    std::pair<std::optional<Analyser::MulItem*>, std::optional<CompilationError>> Analyser::analyseUnaryExpression(){
         auto next = nextToken();
         if (!next.has_value())
-            return std::make_pair(std::optional<Analyser::Factor*>(),
+            return std::make_pair(std::optional<Analyser::MulItem*>(),
                         std::make_optional<CompilationError>(_current_pos
                                 , ErrorCode::ErrIncompleteExpression));
 
@@ -378,7 +375,7 @@ namespace miniplc0 {
 
         next = nextToken();
         if(!next.has_value()){
-            return std::make_pair(std::optional<Analyser::Factor*>(),
+            return std::make_pair(std::optional<Analyser::MulItem*>(),
                                   std::make_optional<CompilationError>(_current_pos
                                           , ErrorCode::ErrIncompleteExpression));
         }
@@ -394,7 +391,7 @@ namespace miniplc0 {
                         return std::make_pair(new Variable(sign, var), std::optional<CompilationError>());
                         //利用标识符找到常量、变量在栈中的索引，利用load指令载入identifi的值
                     }else{
-                        return std::make_pair(std::optional<Factor*>(),
+                        return std::make_pair(std::optional<MulItem*>(),
                                 std::make_optional<CompilationError>(_current_pos,ErrorCode::ErrNotDeclared));
                     }
                 }
@@ -404,10 +401,10 @@ namespace miniplc0 {
                         unreadToken();
                         auto err = analyseFunctionCall();
                         if (err.second.has_value())
-                            return std::make_pair(std::optional<Analyser::Factor *>(), err.second);
+                            return std::make_pair(std::optional<Analyser::MulItem *>(), err.second);
                         return std::make_pair(err.first, std::optional<CompilationError>());
                     } else {
-                        return std::make_pair(std::optional<Factor *>(),
+                        return std::make_pair(std::optional<MulItem *>(),
                                               std::make_optional<CompilationError>(_current_pos,
                                                                                    ErrorCode::ErrNotDeclared));
                     }
@@ -416,7 +413,7 @@ namespace miniplc0 {
             case TokenType::UNSIGNED_INTEGER:
             case TokenType::UNSIGNED_HEX_INTEGER:
                 uint32_t k;
-                if (!isBeenLoad(next.value())) {
+                if (!checkState(next.value())) {
                     addCONST(next.value());
                     k = _CONSTS.size() - 1;
                 } else
@@ -425,17 +422,17 @@ namespace miniplc0 {
             case TokenType::LEFT_BRACKET:{
                 auto err = analyseExpression();
                 if (err.second.has_value())
-                    return std::make_pair(std::optional<Analyser::Factor*>(), err.second);
+                    return std::make_pair(std::optional<Analyser::MulItem*>(), err.second);
                 err.first.value()->sign = sign;
                 next = nextToken();
                 if (!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET)
-                    return std::make_pair(std::optional<Analyser::Factor*>(),
+                    return std::make_pair(std::optional<Analyser::MulItem*>(),
                                           std::make_optional<CompilationError>(_current_pos,
                                                                                ErrorCode::ErrIncompleteExpression));
                 break;
             }
             default:
-                return std::make_pair(std::optional<Factor*>(),
+                return std::make_pair(std::optional<MulItem*>(),
                         std::make_optional<CompilationError>(_current_pos,
                                 ErrorCode::ErrIncompleteExpression));
         }
@@ -490,9 +487,7 @@ namespace miniplc0 {
             // 进入新的函数 设置为非全局变量
             // 保存当前区域变量表进入变量表的表
             isGlabol = false;
-            loadNewLevel();
-
-
+            pushStack();
 
             // 下面匹配<parameter-clause>
             auto err1 = analyseParameterClause();
@@ -554,7 +549,7 @@ namespace miniplc0 {
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACE){
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrCompoundStatement);
         }
-        popCurrentLevel();
+        popStack();
         return {};
     }
 
@@ -582,11 +577,6 @@ namespace miniplc0 {
             if (err.has_value())
                 return err;
 
-            // 根据结果生成指令
-//            if (type == TokenType::PLUS_SIGN)
-//                _instructions.emplace_back(Operation::ADD, 0);
-//            else if (type == TokenType::MINUS_SIGN)
-//                _instructions.emplace_back(Operation::SUB, 0);
         }
 
         return {};
@@ -612,9 +602,9 @@ namespace miniplc0 {
         switch (next.value().GetType()) {
             // '{' <statement-seq> '}'
             case TokenType::LEFT_BRACE:{
-                loadNewLevel();
+                pushStack();
                 err = analyseStatementSeq();
-                popCurrentLevel();
+                popStack();
                 if (err.has_value())
                     return err;
                 next = nextToken();
@@ -688,7 +678,7 @@ namespace miniplc0 {
                         auto err = analyseFunctionCall();
                         if (err.second.has_value())
                             return err.second;
-                        err.first.value()->generation();
+                        err.first.value()->gen();
                     }else{
                         return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrStatement);
                     }
@@ -738,7 +728,7 @@ namespace miniplc0 {
             auto err = analyseExpression();
             if (err.second.has_value())
                 return err.second;
-            err.first.value()->generation();
+            err.first.value()->gen();
             hasExp = 1;
             next = nextToken();
         }
@@ -821,7 +811,7 @@ namespace miniplc0 {
         auto err = analyseExpression();
         if (err.second.has_value())
             return std::make_pair(std::optional<int32_t>(),err.second);
-        err.first.value()->generation();
+        err.first.value()->gen();
 
         TokenType type;
         auto next = nextToken();
@@ -840,7 +830,7 @@ namespace miniplc0 {
 
         err = analyseExpression();
         if (err.second.has_value()) return std::make_pair(std::make_optional(int32_t()),err.second);
-        err.first.value()->generation();
+        err.first.value()->gen();
         _instructions.emplace_back(Operation::ISUB, 0);
         switch (type) {
             case TokenType::BIG:{
@@ -1021,7 +1011,7 @@ namespace miniplc0 {
         auto err = analyseExpression();
         if (err.second.has_value())
             return err.second;
-        err.first.value()->generation();
+        err.first.value()->gen();
         _instructions.emplace_back(IPRINT, 0);
         return {};
     }
@@ -1055,7 +1045,7 @@ namespace miniplc0 {
 
         auto err = analyseExpression();
         if (err.second.has_value()) return err.second;
-        auto rettype=err.first.value()->generation();
+        auto rettype=err.first.value()->gen();
         if(rettype==VOID)
             return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrAssignmentExpression);
         _instructions.emplace_back(Operation::ISTORE, 0);
@@ -1181,22 +1171,22 @@ namespace miniplc0 {
     // Done
     // Done
     // <function-call> ::= <identifier> '(' [<expression-list>] ')'
-    std::pair<std::optional<Analyser::Call*>,std::optional<CompilationError>> Analyser::analyseFunctionCall(){
+    std::pair<std::optional<Analyser::FunCall*>,std::optional<CompilationError>> Analyser::analyseFunctionCall(){
         // 判断是否开头为<identifier>
         auto next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::IDENTIFIER){
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier));
         }
         std::string str = next.value().GetValueString();
 
         //函数是否被声明成变量
         if (isDeclared(str))
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionCall));
         //函数是否被声明过
         if (!isFunctionDeclared(str))
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionCall));
 
         int index = getFuncIndex(str);
@@ -1206,7 +1196,7 @@ namespace miniplc0 {
         // 判断下一个是否为'('
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::LEFT_BRACKET){
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionCall));
         }
 
@@ -1214,7 +1204,7 @@ namespace miniplc0 {
         // 那么必定是有参数的
         next = nextToken();
         if(!next.has_value()){
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionCall));
         }
 
@@ -1222,21 +1212,21 @@ namespace miniplc0 {
             unreadToken();
             auto err = analyseExpressionList();
             if (err.second.has_value())
-                return std::make_pair(std::optional<Analyser::Call*>(), err.second);
+                return std::make_pair(std::optional<Analyser::FunCall*>(), err.second);
             exps = err.first.value();
             next = nextToken();
             if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
-                return std::make_pair(std::optional<Analyser::Call*>(),
+                return std::make_pair(std::optional<Analyser::FunCall*>(),
                                       std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrFunctionCall));
             }
-            return std::make_pair(new Call(NULL_TOKEN, function, exps, index), std::optional<CompilationError>());
+            return std::make_pair(new FunCall(NULL_TOKEN, function, exps, index), std::optional<CompilationError>());
         }
 
         if (function.getParaSize() != 0)
-            return std::make_pair(std::optional<Analyser::Call*>(),
+            return std::make_pair(std::optional<Analyser::FunCall*>(),
                                   std::make_optional<CompilationError>(_current_pos,
                                                                        ErrorCode::ErrFunctionCall));
-        return std::make_pair(new Call(NULL_TOKEN, function, exps, index), std::optional<CompilationError>());
+        return std::make_pair(new FunCall(NULL_TOKEN, function, exps, index), std::optional<CompilationError>());
 
     }
 
@@ -1325,7 +1315,6 @@ namespace miniplc0 {
         _function[name] = _funcs.size();
     }
 
-    //返回索引+1
     int32_t Analyser::getConstIndex(const Token &tk) {
         if (tk.GetType() == TokenType::IDENTIFIER)//string
         {
@@ -1344,17 +1333,7 @@ namespace miniplc0 {
         return _funcs[index - 1];
     }
 
-    bool Analyser::isBeenLoad(Token &token) {
-//        std::string s;
-//        if (token.GetType() == TokenType::INTEGER || token.GetType() == TokenType::CHAR_LIT) {
-//            int num = std::any_cast<std::int32_t>(token.GetValue());
-//            std::stringstream ss;
-//            ss << num;
-//            ss >> s;
-//        } else
-//            s = token.GetValueString();
-//        return isCONST(s);
-
+    bool Analyser::checkState(Token &token) {
         std::string s;
         s = token.GetValueString();
         return isCONST(s);
@@ -1364,7 +1343,6 @@ namespace miniplc0 {
     bool Analyser::isCONST(std::string basicString) {
         return _constant[basicString] != 0;
     }
-//返回 实际的索引+1
 
     //变量表
 
@@ -1378,19 +1356,6 @@ namespace miniplc0 {
         } else {
             return _find(s, *_var).getIndex() == 0;
         }
-    }
-
-    bool Analyser::isUninitializedVariable(const std::string &s) {//1
-        auto p = _findLocal(s);
-        auto g = _findGlobal(s);
-        return (p.getIndex() != 0 && p.isUnit1()) || (g.getIndex() != 0 && g.isUnit1());
-    }
-
-    bool Analyser::isInitializedVariable(const std::string &s) {//2
-        auto p = _findLocal(s);
-        auto g = _findGlobal(s);
-        return (p.getIndex() != 0 && !p.isConst1() && !p.isUnit1()) ||
-               (g.getIndex() != 0 && !g.isConst1() && !g.isUnit1());
     }
 
     bool Analyser::isConstant(const std::string &s) {//0
@@ -1431,18 +1396,6 @@ namespace miniplc0 {
         return Var();
     }
 
-    std::pair<int32_t, int32_t> Analyser::getIndex(const std::string &s) {
-        std::pair<int32_t, int32_t> p(-1, -1);
-        //先找局部变量
-        int index = -1;
-        if ((index = _findLocal(s).getIndex()) != 0)
-            p.second = 0;
-        else if ((index = _findGlobal(s).getIndex()) != 0)
-            p.second = 1;
-        p.first = index - 1;
-        return p;
-    }
-
     Var Analyser::getVar(const std::string &s) {
         auto var = _findLocal(s), gvar = _findGlobal(s);
         if (var.getIndex() != 0)
@@ -1468,36 +1421,21 @@ namespace miniplc0 {
     }
 
     void Analyser::addUninitializedVariable(const Token &tk, const TokenType &type) {
-
         if (isGlabol == true)
             _add(tk, g_var, type, false, true);
         else
             _add(tk, (*_var), type, false, true);
     }
 
-
-    //高级操作，对帧栈的操作
-    void Analyser::InitStack() {
-        _var = new std::map<std::string, Var>();
-    }
-
-    //进入一个新块。将pre指针指向当前 prepre=pre,pre=top;top++
-    void Analyser::loadNewLevel() {
+    void Analyser::pushStack() {
         _var_table.emplace_back(_var);
         _var = new std::map<std::string, Var>();
-
     }
 
-    //弹出一个块。
-    void Analyser::popCurrentLevel() {
+    void Analyser::popStack() {
         (*_var).clear();
         _var = _var_table.back();
         _var_table.pop_back();
-    }
-
-
-    TokenType Analyser::getType(std::string &var) {
-        getIndex(var);
     }
 
     void Analyser::createStack() {

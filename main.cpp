@@ -34,39 +34,34 @@ void Analyse(std::istream &input, std::ostream &output) {
         exit(2);
     }
     auto v = p.first;
-    std::vector<std::pair<std::string, int>> Consts = v.getConstList();
-    std::vector<miniplc0::Function> funlist = v.getFunctionList();
-    std::vector<miniplc0::Instruction> beginCode = v.getBeginCode();
-    std::vector<std::vector<miniplc0::Instruction>> program = v.getProgramList();
+    std::vector<std::pair<std::string, int>> cons = v.cons();
     output << fmt::format(".constants:\n");
-    for (int i = 0; i < Consts.size(); i++) {
-        std::string INT = "I", STR = "S", type, value = Consts[i].first;
-        if (Consts[i].second == 0)
-            type = INT;
-        else{
-            type = STR;
-            value = '"'+value+'"';
-        }
+    for (int i = 0; i < cons.size(); i++) {
+        std::string type, value = cons[i].first;
+        if (cons[i].second == 0) type = "I";
+        else{ type = "S"; value = '"'+value+'"';}
         output << fmt::format("\t{} {} {}\n", i, type, value);
     }
-    output << fmt::format("\n");
-    output << fmt::format(".start:\n");
-    for (int i = 0; i < beginCode.size(); i++) {
-        output << fmt::format("\t{} {}\n", i, beginCode[i]);
+    // 全局量加载
+    std::vector<miniplc0::Instruction> start = v.start();
+    output << fmt::format("\n.start:\n");
+    for (int i = 0; i < start.size(); i++) {
+        output << fmt::format("\t{} {}\n", i, start[i]);
     }
-    output << fmt::format("\n");
-    output << fmt::format(".functions:\n");
-
+    // 函数表
+    std::vector<miniplc0::Function> funlist = v.funcs();
+    output << fmt::format("\n.functions:\n");
     for (int i = 0; i < funlist.size(); i++) {
         output << fmt::format("\t{} {} {} {}\n", i, funlist[i].nameindex, funlist[i].getParaSize(), funlist[i].level);
     }
-
+    // 函数代码
+    std::vector<std::vector<miniplc0::Instruction>> program = v.codes();
     output << fmt::format("\n");
     for (int i = 1; i < program.size(); i++) {
-        auto it = program[i];
+        auto  p = program[i];
         output << fmt::format(".F{}:\n", i - 1);
-        for (int j = 0; j < it.size(); j++) {
-            output << fmt::format("\t{} {}\n", j, it[j]);
+        for (int j = 0; j < p.size(); j++) {
+            output << fmt::format("\t{} {}\n", j, p[j]);
         }
     }
 
@@ -141,8 +136,15 @@ int main(int argc, char **argv) {
                 exit(2);
             }
             output = &outf;
-        } else
-            output = &std::cout;
+        } else{
+            output_file = input_file+".s";
+            outf.open(output_file, std::ios::binary | std::ios::out | std::ios::trunc);
+            if (!outf) {
+                fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
+                exit(2);
+            }
+        }
+        output = &outf;
         Analyse(*input, *output);
     } else if (program["-c"] == true) {
         if (output_file != "-") {
@@ -152,8 +154,15 @@ int main(int argc, char **argv) {
                 exit(2);
             }
             output = &outf;
-        } else
-            output = &std::cout;
+        } else{
+            output_file = input_file+".out";
+            outf.open(output_file, std::ios::binary | std::ios::out | std::ios::trunc);
+            if (!outf) {
+                fmt::print(stderr, "Fail to open {} for writing.\n", output_file);
+                exit(2);
+            }
+            output = &outf;
+        }
         std::ofstream* real_out = dynamic_cast<std::ofstream*>(output);
         auto tks = _tokenize(*input);
         miniplc0::Analyser analyser(tks);
@@ -170,4 +179,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-

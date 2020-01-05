@@ -15,100 +15,57 @@ namespace miniplc0 {
     extern std::vector<miniplc0::Instruction> _instructions;
 
     class Var {
-    private:
-        int32_t _index;
-        TokenType _type;
-        bool isConst;
-        bool isUnit;
-        bool isGlobal;
-    public:
-        bool isGlobal1() const {return isGlobal;}
-
-        bool isConst1() const {return isConst;}
-
-        bool isUnit1() const {return isUnit;}
-
-        void setIsConst(bool isConst) {Var::isConst = isConst;}
-
-        void setIsUnit(bool isUnit) {Var::isUnit = isUnit;}
-
-    public:
-        void setIndex(int32_t index) {_index = index;}
-
-        void setType(TokenType type) {_type = type;}
-
-        int32_t getIndex() const {return _index;}
-
-        TokenType getType() const {return _type;}
-
-    public:
-        Var(int32_t index, TokenType type, bool isConst, bool isUnit, bool isGlobal) : _index(index), _type(type),
-                                                                                       isConst(isConst), isUnit(isUnit),
-                                                                                       isGlobal(isGlobal) {}
-
-        Var(){_type=TokenType ::LEFT_BRACE;_index=0;}
+        public:
+            Var(int32_t index, TokenType type, bool isConst, bool isUnit, bool isGlobal) : _index(index), _type(type),
+                                                                                           isConst(isConst), isUnit(isUnit),
+                                                                                           isGlobal(isGlobal) {}
+            Var(){_type=TokenType ::LEFT_BRACE;_index=0;}
+        private:
+            int32_t _index;
+            TokenType _type;
+            bool isConst;
+            bool isUnit;
+            bool isGlobal;
+        public:
+            bool isGlobal1() const {return isGlobal;}
+            bool isConst1() const {return isConst;}
+        public:
+            int32_t getIndex() const {return _index;}
+            TokenType getType() const {return _type;}
     };
-    class Function
-    {
-    public:
-        Function(int nameindex, int level, const std::vector<TokenType> &paras, TokenType ret) : nameindex(nameindex),
-                                                                                                 level(level),
-                                                                                                 paras(paras),
-                                                                                                 ret(ret) {}
 
-    public:
-        int nameindex;
-        int level;
-        std::vector<TokenType> paras;
-        TokenType ret;
-
-        TokenType getRet() const {
-            return ret;
-        }
-
-        void setRet(TokenType ret) {
-            Function::ret = ret;
-        }
-
-        void insertPara(TokenType type)
-        {
-            paras.emplace_back(type);
-        }
-        int32_t getParaSize()
-        {
-            return paras.size();
-        }
-
-        const std::vector<TokenType> &getParas() const {
-            return paras;
-        }
+    class Function{
+        public:
+            Function(int nameindex, int level, const std::vector<TokenType> &paras, TokenType ret) : nameindex(nameindex),
+                                                                                                     level(level),
+                                                                                                     paras(paras),
+                                                                                                     ret(ret) {}
+        public:
+            int nameindex;
+            int level;
+            std::vector<TokenType> paras;
+            TokenType ret;
+            TokenType getRet() const {return ret;}
+            int32_t getParaSize(){return paras.size();}
+            const std::vector<TokenType> &getParas() const {return paras;}
     };
 
     class Program{
-    public:
-        Program(std::vector<std::pair<std::string,int>> _CONSTS,std::vector<Function> _funcs,std::vector<std::vector<Instruction>> _program):
-                _CONSTS(_CONSTS),_funcs(_funcs),_program(_program){}
-        Program(){}
-        std::vector<std::pair<std::string,int>> getConstList(){
-            return _CONSTS;
-        }
-        std::vector<Function> getFunctionList(){
-            return _funcs;
-        }
-        std::vector<Instruction> getBeginCode(){
-            return _program[0];
-        }
-        std::vector<std::vector<Instruction>> getProgramList(){
-            return _program;
-            //下标从1开始
-        }
-    private:
-        std::vector<std::pair<std::string,int>> _CONSTS;
-        std::vector<Function> _funcs;
-        std::vector<std::vector<Instruction>> _program;
+        public:
+            Program(std::vector<std::pair<std::string,int>> _CONSTS,std::vector<Function> _funcs,std::vector<std::vector<Instruction>> _program):
+                    _CONSTS(_CONSTS),_funcs(_funcs),_program(_program){}
+            Program(){}
+            std::vector<std::pair<std::string,int>> cons(){
+                return _CONSTS;
+            }
+            std::vector<Function> funcs(){return _funcs;}
+            std::vector<Instruction> start(){return _program[0];}
+            std::vector<std::vector<Instruction>> codes(){return _program;}
+        private:
+            std::vector<std::pair<std::string,int>> _CONSTS;
+            std::vector<Function> _funcs;
+            std::vector<std::vector<Instruction>> _program;
     };
-
-
 
     class Analyser final {
         private:
@@ -129,10 +86,10 @@ namespace miniplc0 {
             std::pair<Program, std::optional<CompilationError>> Analyse();
 
 
-            struct Factor;
+            struct MulItem;
             struct Item;
             struct Expression;
-            struct Call;
+            struct FunCall;
             struct Char;
             struct Integer;
             struct Variable;
@@ -154,7 +111,7 @@ namespace miniplc0 {
             // <multiplicative-expression>
             std::pair<std::optional<Item>,std::optional<CompilationError>> analyseMultiplicativeExpression();
             // <unary-expression>
-            std::pair<std::optional<Factor*>, std::optional<CompilationError>> analyseUnaryExpression();
+            std::pair<std::optional<MulItem*>, std::optional<CompilationError>> analyseUnaryExpression();
 
             // <function-definition>
             std::optional<CompilationError> analyseFunctionDefinition();
@@ -166,7 +123,7 @@ namespace miniplc0 {
             // <parameter-declaration>
             std::optional<CompilationError> analyseParameterDeclaration();
             // <function-call>
-            std::pair<std::optional<Call*>,std::optional<CompilationError>> analyseFunctionCall();
+            std::pair<std::optional<FunCall*>,std::optional<CompilationError>> analyseFunctionCall();
             // <expression-list>
             std::pair<std::optional<std::vector<Expression*>> ,std::optional<CompilationError>> analyseExpressionList();
 
@@ -222,8 +179,6 @@ namespace miniplc0 {
             int32_t _nextTokenIndex;
             bool isGlabol;
 
-
-
             // 语义分析与符号表函数
         private:
             std::vector<std::vector<Instruction>> _program;
@@ -269,10 +224,6 @@ namespace miniplc0 {
             // 是否被声明过
             bool isDeclared(const std::string& );
             bool isFunctionDeclared(const std::string& );
-            // 是否是未初始化的变量
-            bool isUninitializedVariable(const std::string& );
-            // 是否是已初始化的变量
-            bool isInitializedVariable(const std::string& );
             // 是否是常量
             bool isConstant(const std::string& );
 
@@ -280,19 +231,12 @@ namespace miniplc0 {
             int32_t getFuncIndex(const std::string& );
 
             //符号表管理
-            void InitStack();
-            void loadNewLevel();//将pre指针指向当前 prepre=pre,pre=top;top++
-            void popCurrentLevel();//top=pre ,pre=prepre
-            void loadOne(const std::string& s);//top++
-            std::pair<int32_t,int32_t>  getIndex(const std::string&);
+            void pushStack();
+            void popStack();
 
-
-            // 获得 {变量，常量} 在栈上的偏移
-            bool isBeenLoad(Token &token);
+            bool checkState(Token &token);
 
             bool isCONST(std::string basicString);
-
-            void deleteVar(std::string basicString);
 
             Function getFunc(int32_t index);
 
@@ -303,137 +247,94 @@ namespace miniplc0 {
 
         public:
             struct Item { //* /
-                std::vector<Factor*> factors;
+                std::vector<MulItem*> mulitems;
                 std::vector<TokenType> mul;
-
-                Item(const std::vector<Factor *> &factors, const std::vector<TokenType> &mul) : factors(factors),
+                Item(const std::vector<MulItem *> &mulitems, const std::vector<TokenType> &mul) : mulitems(mulitems),
                                                                                                 mul(mul) {}
-
-                TokenType generation()
-                {
-                    if(mul.size()==0)
-                    {
-                        return factors[0]->generation();
-                    }
-                    for(int i=0;i<mul.size();i++)
-                    {
-                        factors[i]->generation();
-                        factors[i+1]->generation();
+                TokenType gen(){
+                    if(mul.size()==0) return mulitems[0]->gen();
+                    mulitems[0]->gen();
+                    for(int i=0;i<mul.size();i++){
+                        mulitems[i+1]->gen();
                         if(mul[i]==DIVISION_SIGN)
-                        {
                             _instructions.emplace_back(Operation::IDIV, 0);
-                        }
                         else if (mul[i]==MULTIPLICATION_SIGN)
-                        {
                             _instructions.emplace_back(Operation::IMUL, 0);
-                        }
                     }
                     return INT;
                 }
             };
-            struct Factor {
+            struct MulItem {
                 TokenType  sign;
-
-                Factor(TokenType sign) : sign(sign) {}
-
-                virtual  TokenType generation(){
-                    if(sign==MINUS_SIGN)
-                    {
-                        _instructions.emplace_back(Operation::INEG, 0);
-                    }
+                MulItem(TokenType sign) : sign(sign) {}
+                virtual  TokenType gen(){
+                    if(sign==MINUS_SIGN) _instructions.emplace_back(Operation::INEG, 0);
                     return TokenType ::NULL_TOKEN;
                 }
             };
-            struct Variable : Factor {
+            struct Variable : MulItem {
                 Var var;
+                Variable(TokenType sign, const Var &var) : MulItem(sign), var(var) {}
 
-                Variable(TokenType sign, const Var &var) : Factor(sign), var(var) {}
-
-                TokenType generation()
-                {
+                TokenType gen(){
                     int level=var.isGlobal1(),index=var.getIndex()-1;
-                    _instructions.emplace_back(Operation::LOADA, level, index);//7
-                    _instructions.emplace_back(Operation::ILOAD, 0);//1
-                    Factor::generation();
+                    _instructions.emplace_back(Operation::LOADA, level, index);
+                    _instructions.emplace_back(Operation::ILOAD, 0);
+                    MulItem::gen();
                     return var.getType();
                 }
             };
-            struct Integer : Factor {
+            struct Integer : MulItem {
                 int32_t index;
 
-                Integer(TokenType sign, int32_t index) : Factor(sign),  index(index) {}
+                Integer(TokenType sign, int32_t index) : MulItem(sign),  index(index) {}
 
-                TokenType generation()
-                {
+                TokenType gen(){
                     _instructions.emplace_back(Operation::LOADC, index);
-                    Factor::generation();
+                    MulItem::gen();
                     return INT;
                 }
             };
-            struct Expression : Factor {
+            struct Expression : MulItem {
                 std::vector<TokenType> add;
                 std::vector<Item> items;
-
-                Expression(TokenType sign, const std::vector<TokenType> &add, const std::vector<Item > &items) : Factor(
+                Expression(TokenType sign, const std::vector<TokenType> &add, const std::vector<Item > &items) : MulItem(
                         sign), add(add), items(items) {}
 
-                TokenType  generation(){
-                    if(items.size()==1)
-                    {
-                        Factor::generation();
-                        return items[0].generation();
+                TokenType  gen(){
+                    if(items.size()==1){
+                        MulItem::gen();
+                        return items[0].gen();
                     }
-                    items[0].generation();
-                    for(int i=0;i<add.size();i++)
-                    {
-                        items[i+1].generation();
+                    items[0].gen();
+                    for(int i=0;i<add.size();i++){
+                        items[i+1].gen();
                         if(add[i]==MINUS_SIGN)
-                        {
                             _instructions.emplace_back(Operation::ISUB, 0);
-                        }
                         else if (add[i]==PLUS_SIGN)
-                        {
                             _instructions.emplace_back(Operation::IADD, 0);
-                        }
                     }
-                    Factor::generation();
+                    MulItem::gen();
                     return INT;
                 }
             };
-            struct Call : Factor {
+            struct FunCall : MulItem {
                 Function function;
                 std::vector<Expression*> exps;
                 int index;
-                Call(TokenType sign, const Function &function, const std::vector<Expression *> &exps) : Factor(sign),
-                                                                                                        function(function),
-                                                                                                        exps(exps) {}
-
-                Call(TokenType sign, const Function &function, const std::vector<Expression *> &exps, int index) : Factor(
+                FunCall(TokenType sign, const Function &function,
+                        const std::vector<Expression *> &exps) : MulItem(sign),
+                        function(function),exps(exps) {}
+                FunCall(TokenType sign, const Function &function, const std::vector<Expression *> &exps, int index) : MulItem(
                         sign), function(function), exps(exps), index(index) {}
-
-                TokenType generation(){
+                TokenType gen(){
                     auto para=function.getParas();
-                    for(int i=0;i<exps.size();i++)
-                    {
-                        auto type = exps[i]->generation();
-                    }
-                    Factor::generation();
-
+                    for(int i=0;i<exps.size();i++) auto type = exps[i]->gen();
+                    MulItem::gen();
                     _instructions.emplace_back(Operation::CALL,index);
                     return function.getRet();
                 }
             };
-//            struct Char : Factor {
-//                int32_t index;
-//                Char(TokenType sign, int32_t index) : Factor(sign), index(index) {}
-//                TokenType generation()
-//                {
-//                    _instructions.emplace_back(Operation::LOADC, index);
-//                    insindex+=3;
-//                    Factor::generation();
-//                    return CHAR;
-//                }
-//            };
 
     };
 }

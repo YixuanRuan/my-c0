@@ -9,21 +9,45 @@ inline void catOp(miniplc0::Instruction &instruction,std::ofstream &out) {
         }
         out.write(bytes, count);
     };
-    int ope,num=1;
+    int ope;
     switch(instruction.GetOperation())
     {
-        case miniplc0::ILOAD:ope=0x10;num=1;break;
-        case miniplc0::ISTORE:ope=0x20;num=1;break;
-        case miniplc0::IADD:ope=0x30;num=1;break;
-        case miniplc0::ISUB:ope=0x34;num=1;break;
-        case miniplc0::IMUL:ope=0x38;num=1;break;
-        case miniplc0::INEG:ope=0x40;num=1;break;
-        case miniplc0::IDIV:ope=0x3c;num=1;break;
-        case miniplc0::RET:ope=0x88;num=1;break;
-        case miniplc0::IRET:ope=0x89;num=1;break;
-        case miniplc0::IPRINT:ope=0xa0;num=1;break;
-        case miniplc0::ISCAN:ope=0xb0;num=1;break;
-        case miniplc0::POP:ope=0x04;num=1;break;
+        case miniplc0::IDIV:{
+            ope=0x3c;break;
+        }
+        case miniplc0::RET:{
+            ope=0x88;break;
+        }
+        case miniplc0::IRET:{
+            ope=0x89;break;
+        }
+        case miniplc0::IPRINT:{
+            ope=0xa0;break;
+        }
+        case miniplc0::ILOAD:{
+            ope=0x10;break;
+        }
+        case miniplc0::ISTORE:{
+            ope=0x20;break;
+        }
+        case miniplc0::IADD:{
+            ope=0x30;break;
+        }
+        case miniplc0::ISUB:{
+            ope=0x34;break;
+        }
+        case miniplc0::IMUL:{
+            ope=0x38;break;
+        }
+        case miniplc0::INEG:{
+            ope=0x40;break;
+        }
+        case miniplc0::ISCAN:{
+            ope=0xb0;break;
+        }
+        case miniplc0::POP:{
+            ope=0x04;break;
+        }
         case miniplc0::CALL:{
             ope=0x80;
             vm::u1 op = static_cast<vm::u1>(ope);
@@ -124,20 +148,12 @@ inline void catOp(miniplc0::Instruction &instruction,std::ofstream &out) {
             return ;
         }
     }
-    if(num==1){
-        vm::u1 op = ope;
-        writeNBytes(&op, sizeof op);
-    }
-
+    vm::u1 op = ope;
+    writeNBytes(&op, sizeof op);
 }
 
 void Binary(miniplc0::Program &v, std::ofstream &out) {
     char bytes[8];
-    std::vector<std::pair<std::string, int>> Consts = v.getConstList();
-    std::vector<miniplc0::Function> funlist = v.getFunctionList();
-    std::vector<miniplc0::Instruction> beginCode = v.getBeginCode();
-    std::vector<std::vector<miniplc0::Instruction>> program = v.getProgramList();
-
     const auto writeNBytes = [&](void* addr, int count) {
         assert(0 < count && count <= 8);
         char* p = reinterpret_cast<char*>(addr) + (count-1);
@@ -152,6 +168,7 @@ void Binary(miniplc0::Program &v, std::ofstream &out) {
     // version
     out.write("\x00\x00\x00\x01", 4);
     // constants_count
+    std::vector<std::pair<std::string, int>> Consts = v.cons();
     vm::u2 constants_count = Consts.size();
     writeNBytes(&constants_count, sizeof constants_count);
     // constants
@@ -179,14 +196,18 @@ void Binary(miniplc0::Program &v, std::ofstream &out) {
         }
     }
 
+    std::vector<miniplc0::Instruction> beginCode = v.start();
     vm::u2 instructions_count = beginCode.size();
     writeNBytes(&instructions_count, sizeof instructions_count);
 
     for(auto it:beginCode)
         catOp(it,out);
 
+    std::vector<miniplc0::Function> funlist = v.funcs();
     vm::u2 functions_count = funlist.size();
     writeNBytes(&functions_count, sizeof functions_count);
+
+    std::vector<std::vector<miniplc0::Instruction>> program = v.codes();
     for(int i=0;i<funlist.size();i++)
     {
         vm::u2 v;
