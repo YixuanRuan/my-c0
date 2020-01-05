@@ -824,7 +824,7 @@ namespace miniplc0 {
             type != TokenType::NOT_EQUAL &&
             type != TokenType::EQUAL)){
             unreadToken();
-            _instructions.emplace_back(Operation::JNE, 0);
+            _instructions.emplace_back(Operation::JE, 0);
             return std::make_pair(_instructions.size()-1,std::optional<CompilationError>());
         }
 
@@ -854,7 +854,7 @@ namespace miniplc0 {
                 break;
             }
             case TokenType::EQUAL:{
-                _instructions.emplace_back(Operation::JNE, 0);
+                _instructions.emplace_back(Operation::JE, 0);
                 break;
             }
             default: break;
