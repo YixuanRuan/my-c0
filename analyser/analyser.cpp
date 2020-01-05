@@ -771,7 +771,7 @@ namespace miniplc0 {
         auto err = analyseCondition();
         if (err.second.has_value())
             return err.second;
-        int jcond=err.first.value();
+        int jp=err.first.value();
 
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET){
@@ -785,13 +785,13 @@ namespace miniplc0 {
         // If成立需要跳过else，如果没有else也要跳到后面
         _instructions.emplace_back(JMP,0);
 
-        int jmps2=_instructions.size()-1;
+        int jp2=_instructions.size()-1;
         //if不成立跳到这里
-        _instructions[jcond].SetX(_instructions.size());
+        _instructions[jp].SetX(_instructions.size());
 
         next = nextToken();
         if(!next.has_value() || next.value().GetType() != TokenType::ELSE){
-            _instructions[jmps2].SetX(_instructions.size());
+            _instructions[jp2].SetX(_instructions.size());
             unreadToken();
             return {};
         }
@@ -799,7 +799,7 @@ namespace miniplc0 {
         err2 = analyseStatement();
         if (err2.has_value())
             return err2;
-        _instructions[jmps2].SetX(_instructions.size());
+        _instructions[jp2].SetX(_instructions.size());
         return {};
 
     }
@@ -813,16 +813,15 @@ namespace miniplc0 {
             return std::make_pair(std::optional<int32_t>(),err.second);
         err.first.value()->gen();
 
-        TokenType type;
         auto next = nextToken();
-        type = next.value().GetType();
+
         if(!next.has_value() ||
-                (type != TokenType::SMALL &&
-            type != TokenType::BIG &&
-            type != TokenType::SMALL_EQUAL &&
-            type != TokenType::BIG_EQUAL &&
-            type != TokenType::NOT_EQUAL &&
-            type != TokenType::EQUAL)){
+                (next.value().GetType() != TokenType::SMALL &&
+                        next.value().GetType() != TokenType::BIG &&
+                        next.value().GetType() != TokenType::SMALL_EQUAL &&
+                        next.value().GetType() != TokenType::BIG_EQUAL &&
+                        next.value().GetType() != TokenType::NOT_EQUAL &&
+                        next.value().GetType() != TokenType::EQUAL)){
             unreadToken();
             _instructions.emplace_back(Operation::JE, 0);
             return std::make_pair(_instructions.size()-1,std::optional<CompilationError>());
@@ -832,7 +831,7 @@ namespace miniplc0 {
         if (err.second.has_value()) return std::make_pair(std::make_optional(int32_t()),err.second);
         err.first.value()->gen();
         _instructions.emplace_back(Operation::ISUB, 0);
-        switch (type) {
+        switch (next.value().GetType()) {
             case TokenType::BIG:{
                 _instructions.emplace_back(Operation::JLE, 0);
                 break;
